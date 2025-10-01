@@ -5,9 +5,9 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
-with open("README.md") as f:
+with open("README.md", encoding="utf-8") as f:
     readme = f.read()
 
 setup(
@@ -23,6 +23,8 @@ setup(
     ],
     long_description=readme,
     long_description_content_type="text/markdown",
+    packages=find_packages(include=["dpr*", "conf*"]),  # ✅ 명시적으로 둘 다 포함
+    include_package_data=True,                           # ✅ 데이터 동반 설치
     setup_requires=[
         "setuptools>=18.0",
     ],

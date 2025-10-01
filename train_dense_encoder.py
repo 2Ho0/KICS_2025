@@ -246,7 +246,7 @@ class BiEncoderTrainer(object):
                 samples_batch, dataset = samples_batch
             logger.info("Eval step: %d ,rnk=%s", i, cfg.local_rank)
 
-            biencoder_input = biencoder.create_biencoder_input(
+            biencoder_input = biencoder.create_biencoder_input( # 질문/passage 토큰 id 생성
                 samples_batch,
                 self.tensorizer,
                 True,
@@ -695,11 +695,11 @@ def _do_biencoder_fwd_pass(
 
     input = BiEncoderBatch(**move_to_device(input._asdict(), cfg.device))
 
-    q_attn_mask = tensorizer.get_attn_mask(input.question_ids)
+    q_attn_mask = tensorizer.get_attn_mask(input.question_ids) # attention mask 생성
     ctx_attn_mask = tensorizer.get_attn_mask(input.context_ids)
 
     if model.training:
-        model_out = model(
+        model_out = model( # model의 forward 함수 호출
             input.question_ids,
             input.question_segments,
             q_attn_mask,
@@ -722,7 +722,7 @@ def _do_biencoder_fwd_pass(
                 representation_token_pos=rep_positions,
             )
 
-    local_q_vector, local_ctx_vectors = model_out
+    local_q_vector, local_ctx_vectors = model_out # 질문/passage 벡터 반환 
 
     loss_function = BiEncoderNllLoss()
 
