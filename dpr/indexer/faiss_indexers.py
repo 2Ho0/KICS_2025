@@ -95,21 +95,21 @@ class DenseFlatIndexer(DenseIndexer):
         # indexing in batches is beneficial for many faiss index types
         for i in range(0, n, self.buffer_size):
             db_ids = [t[0] for t in data[i : i + self.buffer_size]]
-            vectors = [np.reshape(t[1], (1, -1)) for t in data[i : i + self.buffer_size]]
-            vectors = np.concatenate(vectors, axis=0)
-            total_data = self._update_id_mapping(db_ids)
-            self.index.add(vectors)
+            vectors = [np.reshape(t[1], (1, -1)) for t in data[i : i + self.buffer_size]] # (1, vector_size) 형태로 변환
+            vectors = np.concatenate(vectors, axis=0) # (batch_size, vector_size) 형태로 변환
+            total_data = self._update_id_mapping(db_ids) # passage ID 매핑 업데이트
+            self.index.add(vectors) # FAISS 인덱스에 벡터 추가
             logger.info("data indexed %d", total_data)
 
         indexed_cnt = len(self.index_id_to_db_id)
         logger.info("Total data indexed %d", indexed_cnt)
 
     def search_knn(self, query_vectors: np.array, top_docs: int) -> List[Tuple[List[object], List[float]]]:
-        scores, indexes = self.index.search(query_vectors, top_docs)
+        scores, indexes = self.index.search(query_vectors, top_docs) # (num_queries, top_docs) 형태의 점수와 인덱스 반환
         # convert to external ids
-        db_ids = [[self.index_id_to_db_id[i] for i in query_top_idxs] for query_top_idxs in indexes]
+        db_ids = [[self.index_id_to_db_id[i] for i in query_top_idxs] for query_top_idxs in indexes] # passage ID로 변환
         result = [(db_ids[i], scores[i]) for i in range(len(db_ids))]
-        return result
+        return result # ([(id1, id2, ...), (id1, id2, ...), ...], [[score1, score2, ...], [score1, score2, ...], ...]) 형태로 반환
 
     def get_index_name(self):
         return "flat_index"

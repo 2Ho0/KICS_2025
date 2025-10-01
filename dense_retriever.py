@@ -157,12 +157,12 @@ class LocalFaissRetriever(DenseRetriever):
         :return:
         """
         buffer = []
-        for i, item in enumerate(iterate_encoded_files(vector_files, path_id_prefixes=path_id_prefixes)):
-            buffer.append(item)
+        for i, item in enumerate(iterate_encoded_files(vector_files, path_id_prefixes=path_id_prefixes)): # 임베딩 파일에서 passage 임베딩을 하나씩 읽음
+            buffer.append(item) # item = (id, 임베딩, *추가정보) 튜플
             if 0 < buffer_size == len(buffer):
-                self.index.index_data(buffer)
+                self.index.index_data(buffer) # 인덱스에 벡터를 추가
                 buffer = []
-        self.index.index_data(buffer)
+        self.index.index_data(buffer) # 남은 passage 임베딩 인덱싱
         logger.info("Data indexing completed.")
 
     def get_top_docs(self, query_vectors: np.array, top_docs: int = 100) -> List[Tuple[List[object], List[float]]]:
@@ -567,7 +567,7 @@ def main(cfg: DictConfig):
         logger.info("id_prefixes per dataset: %s", id_prefixes)
 
         # index all passages
-        ctx_files_patterns = cfg.encoded_ctx_files
+        ctx_files_patterns = cfg.encoded_ctx_files # passage 임베딩 파일 리스트, 예시) ["/path/wiki_passages_*", "/path/other_corpus_*"]
 
         logger.info("ctx_files_patterns: %s", ctx_files_patterns)
         if ctx_files_patterns:
@@ -581,19 +581,19 @@ def main(cfg: DictConfig):
 
         input_paths = []
         path_id_prefixes = []
-        for i, pattern in enumerate(ctx_files_patterns):
-            pattern_files = glob.glob(pattern)
-            pattern_id_prefix = id_prefixes[i]
-            input_paths.extend(pattern_files)
-            path_id_prefixes.extend([pattern_id_prefix] * len(pattern_files))
+        for i, pattern in enumerate(ctx_files_patterns): 
+            pattern_files = glob.glob(pattern) # pattern = ["/path/wiki_passages_0", "/path/wiki_passages_1", ...]
+            pattern_id_prefix = id_prefixes[i] # passage ID
+            input_paths.extend(pattern_files) # 임베딩 파일 경로 추가
+            path_id_prefixes.extend([pattern_id_prefix] * len(pattern_files)) # passage ID 추가
         logger.info("Embeddings files id prefixes: %s", path_id_prefixes)
         logger.info("Reading all passages data from files: %s", input_paths)
-        retriever.index_encoded_data(input_paths, index_buffer_sz, path_id_prefixes=path_id_prefixes)
+        retriever.index_encoded_data(input_paths, index_buffer_sz, path_id_prefixes=path_id_prefixes) # FAISS에 임베딩 추가
         if index_path:
             retriever.index.serialize(index_path)
 
     # get top k results
-    top_results_and_scores = retriever.get_top_docs(questions_tensor.numpy(), cfg.n_docs)
+    top_results_and_scores = retriever.get_top_docs(questions_tensor.numpy(), cfg.n_docs) # 각 질문에 대해 상위 n_docs개의 passage 검색
 
     if cfg.use_rpc_meta:
         questions_doc_hits = validate_from_meta(
