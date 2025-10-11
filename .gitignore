@@ -1,1 +1,10 @@
 *.json
+*.pkl
+*.cp
+*.hydra
+*.log
+*.csv
+*.h5
+*.ckpt
+*.pt
+*.tsv

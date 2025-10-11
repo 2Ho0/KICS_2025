@@ -338,7 +338,7 @@ def convert_retriever_results(
     :param num_workers: the number of parallel processes for conversion
     :return: names of files with serialized results
     """
-    with open(input_file, "r", encoding="utf-8") as f:
+    with open(input_file, "r") as f:
         samples = json.loads("".join(f.readlines()))
     logger.info("Loaded %d questions + retrieval results from %s", len(samples), input_file)
     workers = multiprocessing.Pool(num_workers)

@@ -226,7 +226,7 @@ class HFBertEncoder(BertModel):
         representation_token_pos=0,
     ) -> Tuple[T, ...]:
 
-        out = super().forward(
+        out = super().forward( # HuggngFace BertModel의 forward 호출, 이 부분을 수정해서 우리가 만든 Quntum model로 forward 하도록 해야함 
             input_ids=input_ids,
             token_type_ids=token_type_ids,
             attention_mask=attention_mask,
@@ -252,16 +252,17 @@ class HFBertEncoder(BertModel):
             )
             sequence_output, pooled_output = out
 
-        if isinstance(representation_token_pos, int):
+        if isinstance(representation_token_pos, int): # 정수가 들어오면 모든 배치에서 같은 위치 사용
             pooled_output = sequence_output[:, representation_token_pos, :]
         else:  # treat as a tensor
             bsz = sequence_output.size(0)
             assert representation_token_pos.size(0) == bsz, "query bsz={} while representation_token_pos bsz={}".format(
                 bsz, representation_token_pos.size(0)
             )
+            # 텐서가 들어오면 샘플마다 다른 토큰 위치에서 벡터를 뽑음
             pooled_output = torch.stack([sequence_output[i, representation_token_pos[i, 1], :] for i in range(bsz)])
-
-        if self.encode_proj:
+        
+        if self.encode_proj: # 임베딩 차원 축소를 위한 선형층이 있으면 통과
             pooled_output = self.encode_proj(pooled_output)
         return sequence_output, pooled_output, hidden_states
 

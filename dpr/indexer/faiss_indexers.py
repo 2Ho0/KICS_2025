@@ -145,10 +145,10 @@ class DenseHNSWFlatIndexer(DenseIndexer):
         n = len(data)
 
         # max norm is required before putting all vectors in the index to convert inner product similarity to L2
-        if self.phi > 0:
-            raise RuntimeError(
-                "DPR HNSWF index needs to index all data at once," "results will be unpredictable otherwise."
-            )
+        # if self.phi > 0:
+        #     raise RuntimeError(
+        #         "DPR HNSWF index needs to index all data at once," "results will be unpredictable otherwise."
+        #     )
         phi = 0
         for i, item in enumerate(data):
             id, doc_vector = item[0:2]
@@ -205,8 +205,12 @@ class DenseHNSWSQIndexer(DenseHNSWFlatIndexer):
 
     def __init__(
         self,
-        buffer_size: int = 1e10,
-        store_n: int = 128,
+        # buffer_size: int = 1e10,
+        # store_n: int = 128,
+        # ef_search: int = 128,
+        # ef_construction: int = 200,
+        buffer_size: int = 1e6,
+        store_n: int = 32,
         ef_search: int = 128,
         ef_construction: int = 200,
     ):
